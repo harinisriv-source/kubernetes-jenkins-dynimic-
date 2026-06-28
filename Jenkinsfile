@@ -61,7 +61,8 @@ pipeline {
                         sh """
                             ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \
                                 ${ANSIBLE_SSH_USER}@${ANSIBLE_SERVER_IP} \
-                                "ansible-playbook /home/ubuntu/deploy-playbook.yml \
+                                "ansible-playbook -i /home/ubuntu/inventory.ini \
+                                 /home/ubuntu/deploy-playbook.yml \
                                  -e image_tag=${IMAGE_TAG} \
                                  -e image_name=${IMAGE_NAME}"
 
