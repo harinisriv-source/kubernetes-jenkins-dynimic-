@@ -59,7 +59,7 @@ pipeline {
                 keyFileVariable: 'SSH_KEY'
             )]) {
                 sh """
-                scp -i $SSH_KEY \ -o StrictHostKeyChecking=no \ -r k8s \ ubuntu@54.160.236.97:/home/ubuntu/
+                scp -i $SSH_KEY -o StrictHostKeyChecking=no -r k8s ubuntu@54.160.236.97:/home/ubuntu/
                 ssh -i \$SSH_KEY -o StrictHostKeyChecking=no ${ANSIBLE_SSH_USER}@${ANSIBLE_SERVER_IP} 'ansible-playbook -i /home/ubuntu/inventory.ini /home/ubuntu/deploy-playbook.yml -e image_tag=${IMAGE_TAG} -e image_name=${IMAGE_NAME}'
                 """
                     }
