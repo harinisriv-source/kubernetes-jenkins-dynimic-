@@ -5,8 +5,7 @@
 // ============================================================
 
 pipeline {
-    agent jenkins-worker-1
-
+    agent { label 'jenkins-worker-1' }
     environment {
         DOCKERHUB_USER     = 'sri4444'        // CHANGE THIS
         IMAGE_NAME         = 'sri4444/kubernetes'  // CHANGE THIS
