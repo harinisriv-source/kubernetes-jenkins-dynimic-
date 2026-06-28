@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: your-dockerhub-username/myapp:latest   # CHANGE username; Ansible updates tag
+          image: sri4444/kubernetes:latest   # CHANGE username; Ansible updates tag
           imagePullPolicy: Always
           ports:
             - containerPort: 80
