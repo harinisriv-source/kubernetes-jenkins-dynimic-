@@ -5,7 +5,7 @@
 // ============================================================
 
 pipeline {
-    agent ansible-worker-1
+    agent jenkins-worker-1
 
     environment {
         DOCKERHUB_USER     = 'sri4444'        // CHANGE THIS
