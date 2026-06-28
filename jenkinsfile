@@ -22,7 +22,7 @@ pipeline {
             steps {
                 git branch: 'main',
                     credentialsId: 'github-credentials',
-                    url: 'https://github.com/your-org/your-repo.git'  // CHANGE THIS
+                    url: 'https://github.com/harinisriv-source/kubernetes-jenkins-dynimic-.git'  // CHANGE THIS
             }
         }
 
