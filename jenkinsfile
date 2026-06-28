@@ -1,0 +1,87 @@
+// ============================================================
+// Jenkinsfile — Full CI/CD Pipeline
+// Triggers: GitHub webhook on push to main branch
+// Flow: Build image > Push DockerHub > SSH Ansible > K8s deploy
+// ============================================================
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_USER     = 'sri4444'        // CHANGE THIS
+        IMAGE_NAME         = 'sri4444/kubernetes'  // CHANGE THIS
+        IMAGE_TAG          = "${BUILD_NUMBER}"
+        ANSIBLE_SERVER_IP  = '54.160.236.97'                  // CHANGE THIS
+        ANSIBLE_SSH_USER   = 'ubuntu'
+        ANSIBLE_PLAYBOOK   = '/home/ubuntu/deploy-playbook.yml'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-credentials',
+                    url: 'https://github.com/your-org/your-repo.git'  // CHANGE THIS
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_NAME}:latest"
+                        sh "docker logout"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy via Ansible') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(
+                        credentialsId: 'ansible-ssh-key',
+                        keyFileVariable: 'SSH_KEY'
+                    )]) {
+                        sh """
+                            ssh -i \$SSH_KEY -o StrictHostKeyChecking=no \
+                                ${ANSIBLE_SSH_USER}@${ANSIBLE_SERVER_IP} \
+                                "ansible-playbook ${ANSIBLE_PLAYBOOK} \
+                                 -e image_tag=${IMAGE_TAG} \
+                                 -e image_name=${IMAGE_NAME}"
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline succeeded! Image ${IMAGE_NAME}:${IMAGE_TAG} is live."
+        }
+        failure {
+            echo "Pipeline failed. Check logs above."
+        }
+        always {
+            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
+            sh "docker rmi ${IMAGE_NAME}:latest || true"
+        }
+    }
+}
