@@ -5,7 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp-deployment
+  name: test-pip-k8s-deploy
   labels:
     app: myapp
 spec:
